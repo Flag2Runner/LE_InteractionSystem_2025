@@ -45,8 +45,8 @@ class AInteractionSystemCharacter : public ACharacter
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
 	UInputAction* LookAction;
 
-	//UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
-	//UInputAction* InteractAction;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
+	UInputAction* InteractAction;
 
 public:
 	AInteractionSystemCharacter();
@@ -59,7 +59,7 @@ protected:
 	void Look(const FInputActionValue& Value);
 
 	/** Called for Interaction Input **/
-	//void Interact(const FInputActionValue& Value);
+	void Interact(const FInputActionValue& Value);
 
 protected:
 	// APawn interface
@@ -73,6 +73,7 @@ public:
 	/** Returns FirstPersonCameraComponent subobject **/
 	UCameraComponent* GetFirstPersonCameraComponent() const { return FirstPersonCameraComponent; }
 
+	virtual void GetActorEyesViewPoint(FVector& OutLocation, FRotator& OutRotation) const override;
 };
 
 

@@ -81,6 +81,12 @@ void AInteractionSystemCharacter::SetupPlayerInputComponent(UInputComponent* Pla
 	}
 }
 
+void AInteractionSystemCharacter::GetActorEyesViewPoint(FVector& OutLocation, FRotator& OutRotation) const
+{
+	OutLocation = FirstPersonCameraComponent->GetComponentLocation();
+	OutRotation = FirstPersonCameraComponent->GetComponentRotation();
+}
+
 
 void AInteractionSystemCharacter::Move(const FInputActionValue& Value)
 {
@@ -108,25 +114,30 @@ void AInteractionSystemCharacter::Look(const FInputActionValue& Value)
 	}
 }
 
-/**void AInteractionSystemCharacter::Interact(const FInputActionValue& Value)
+void AInteractionSystemCharacter::Interact(const FInputActionValue& Value)
 {
 	// Start location (camera position)
 	FVector StartLocation;
 	FVector ForwardVector;
 	
 	// Check if the player has a camera component
-	if (UCameraComponent* CameraComponent = FindComponentByClass<UCameraComponent>())
-	{
-		StartLocation = CameraComponent->GetComponentLocation();
-		ForwardVector = CameraComponent->GetForwardVector();
-	}
-	else
-	{
-		// Fallback to player's viewpoint if no camera component is found
-		FRotator PlayerViewRotation;
-		GetController()->GetPlayerViewPoint(StartLocation, PlayerViewRotation);
-		ForwardVector = PlayerViewRotation.Vector();
-	}
+	//if (UCameraComponent* CameraComponent = FindComponentByClass<UCameraComponent>())
+	//{
+	//	StartLocation = CameraComponent->GetComponentLocation();
+	//	ForwardVector = CameraComponent->GetForwardVector();
+	//}
+	//else
+	//{
+	//	// Fallback to player's viewpoint if no camera component is found
+	//	FRotator PlayerViewRotation;
+	//	GetController()->GetPlayerViewPoint(StartLocation, PlayerViewRotation);
+	//	
+	//	ForwardVector = PlayerViewRotation.Vector();
+	//}
+
+	FRotator PlayerViewRotation;
+	GetController()->GetPlayerViewPoint(StartLocation, PlayerViewRotation);
+	ForwardVector = PlayerViewRotation.Vector();
 
 	// End location for the trace
 	FVector EndLocation = StartLocation + ForwardVector * 250.0f; // 250 units range
@@ -155,4 +166,4 @@ void AInteractionSystemCharacter::Look(const FInputActionValue& Value)
 	
 
 	
-}**/
+}
