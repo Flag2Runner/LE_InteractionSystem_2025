@@ -8,6 +8,7 @@
 #include "Components/CapsuleComponent.h"
 #include "Components/SkeletalMeshComponent.h"
 #include "EnhancedInputComponent.h"
+#include "Interaction/InteractionInterface.h"
 #include "Engine/World.h"
 #include "DrawDebugHelpers.h"
 #include "EnhancedInputSubsystems.h"
@@ -155,14 +156,18 @@ void AInteractionSystemCharacter::Interact(const FInputActionValue& Value)
 		);
 
 
-	if (bHit)
+	if (!bHit)
+		return;
+	
+	// Visual Debug Line (optional)
+	FColor LineColor = bHit ? FColor::Green : FColor::Red;
+	DrawDebugLine(GetWorld(), StartLocation, EndLocation, LineColor, false, 2.0f, 0, 1.0f);
+
+	AActor* HitActor = HitResult.GetActor();
+	if(HitActor && HitActor->Implements<UInteractionInterface>())
 	{
-		// Visual Debug Line (optional)
-		FColor LineColor = bHit ? FColor::Green : FColor::Red;
-		DrawDebugLine(GetWorld(), StartLocation, EndLocation, LineColor, false, 2.0f, 0, 1.0f);
 		
 	}
-
 	
 
 	
