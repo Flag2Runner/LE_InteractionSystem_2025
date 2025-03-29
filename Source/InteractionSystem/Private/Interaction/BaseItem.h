@@ -3,8 +3,11 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "Components/SphereComponent.h"
 #include "Interaction/InteractionInterface.h"
 #include "GameFramework/Actor.h"
+#include "Widgets/W_Inspect.h"
+#include "Widgets/W_Note.h"
 #include "BaseItem.generated.h"
 
 UCLASS()
@@ -12,7 +15,7 @@ class ABaseItem : public AActor, public IInteractionInterface
 {
 	GENERATED_BODY()
 	
-public:	
+public:
 	// Sets default values for this actor's properties
 	ABaseItem();
 
@@ -26,46 +29,123 @@ public:
 
 	virtual void OnInteract_Implementation() override;
 
+private:
+	UFUNCTION()
+	void AutoReadNote();
+	//*************************//
+	//      UI prefabs         //
+	//*************************//
+
+	UPROPERTY(EditDefaultsOnly, Category = "Public | Reference | Prefab")
+	TSubclassOf<UW_Note> NoteWidgetClass;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Public | Reference | Prefab")
+	TSubclassOf<UW_Inspect> InspectWidgetClass;
 
 
 	//*************************//
 	//      Interaction        //
 	//*************************//
 public:
-	UPROPERTY(EditDefaultsOnly, Category = "Public | Interaction | Settings")
+	UPROPERTY(EditInstanceOnly, BlueprintReadOnly, Category = "Public | Interaction | Settings")
 	float InteractionSphereRadius = 150.f;
 	
-	UPROPERTY(EditDefaultsOnly, Category = "Public | Interaction | Settings")
+	UPROPERTY(EditInstanceOnly, BlueprintReadOnly, Category = "Public | Interaction | Settings")
 	float NotifySphereRadius = 200.f;
 	
-	UPROPERTY(EditDefaultsOnly, Category = "Public | Interaction | Settings")
+	UPROPERTY(EditInstanceOnly, BlueprintReadOnly, Category = "Public | Interaction | Settings")
 	FVector IconLocation;
 	
-	UPROPERTY(EditDefaultsOnly, Category = "Public | Interaction | Settings")
+	UPROPERTY(EditInstanceOnly, BlueprintReadOnly, Category = "Public | Interaction | Settings")
 	bool bIsDebug;
 
-	UPROPERTY(EditDefaultsOnly, Category = "Public | Interaction | Inspection")
+	UPROPERTY(EditInstanceOnly, BlueprintReadOnly, Category = "Public | Interaction | Inspection")
 	bool bIsInspect;
 	
-	UPROPERTY(EditDefaultsOnly, Category = "Public | Interaction | Inspection")
+	UPROPERTY(EditInstanceOnly, BlueprintReadOnly, Category = "Public | Interaction | Inspection")
 	FRotator DefaultInspectionRotation;
 	
-	UPROPERTY(EditDefaultsOnly, Category = "Public | Interaction | Inspection")
+	UPROPERTY(EditInstanceOnly, BlueprintReadOnly, Category = "Public | Interaction | Inspection")
 	FVector DefaultInspectionScale = FVector(1.f,1.f,1.f);
 	
-	UPROPERTY(EditDefaultsOnly, Category = "Public | Interaction | Inspection")
+	UPROPERTY(EditInstanceOnly, BlueprintReadOnly, Category = "Public | Interaction | Inspection")
 	float DefaultInspectionOffset;
 	
 	//*************************//
 	//      Reference          //
 	//*************************//
+public:
+	UPROPERTY(BlueprintReadOnly, Category= "public | Reference")
+	ACharacter* PlayerCharacterReference;
+
+	UPROPERTY(BlueprintReadOnly, Category= "public | Reference")
+	class UW_Note* NoteWidgetReference;
+	
+	UPROPERTY(EditDefaultsOnly, Category = "Public | Reference | Prefab")
+	UTexture* InteractIcon;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Public | Reference | Prefab")
+	UTexture* NotifyIcon;
 private:
 	UPROPERTY()
-	ACharacter* PlayerCharacterReference;
+	USphereComponent* NotifySphereComponent;
+
+	UPROPERTY()
+	USphereComponent* InteractionSphereComponent;
+
+	UPROPERTY()
+	UBillboardComponent* NotifyBillboardComponent;
+
+	UPROPERTY()
+	UBillboardComponent* InteractionBillboardComponent;
+
+	UPROPERTY()
+	UStaticMeshComponent* ItemMeshComponent;
+
 	
-	//UPROPERTY()
-	//class UUserWidget* NoteWidgetReference;
+	//*************************//
+	//         Mesh            //
+	//*************************//
+public:
+	UPROPERTY(EditInstanceOnly, BlueprintReadOnly, Category = "Public | Mesh")
+	UStaticMesh* ItemMesh;
 	
+	UPROPERTY(EditInstanceOnly, BlueprintReadOnly, Category = "Public | Mesh")
+	FText ItemName;
+
+	UPROPERTY(EditInstanceOnly, BlueprintReadOnly, Category = "Public | Mesh")
+	FText ItemDescription;
+
+	UPROPERTY(EditInstanceOnly, BlueprintReadOnly, Category = "Public | Mesh")
+	FVector ItemScale;
+
+	//*************************//
+	//         Note            //
+	//*************************//
+public:
+	UPROPERTY(EditInstanceOnly, BlueprintReadOnly, Category = "Public | Note")
+	bool bIsAutoRead;
 	
+	UPROPERTY(EditInstanceOnly, BlueprintReadOnly, Category = "Public | Note")
+	FText NoteText;
+
+	UPROPERTY()
+	bool bIsNoteActive = false;
+	
+	//*************************//
+	//         Collision       //
+	//*************************//
+	
+	UFUNCTION()
+	void OnInteractOverlapBegin(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
+	
+	UFUNCTION()
+	void OnInteractOverlapEnd(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex);
+
+	UFUNCTION()
+	void OnNotifyOverlapBegin(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
+
+	UFUNCTION()
+	void OnNotifyOverlapEnd(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex);
 	
 };
