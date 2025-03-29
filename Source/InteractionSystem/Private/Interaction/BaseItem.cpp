@@ -2,6 +2,7 @@
 
 
 #include "Interaction/BaseItem.h"
+#include "Interaction/InteractionInterface.h"
 
 // Sets default values
 ABaseItem::ABaseItem()
@@ -25,22 +26,9 @@ void ABaseItem::Tick(float DeltaTime)
 
 }
 
-// void ABaseItem::OnInteract_Implementation()
-// {
-// 	IInteractionInterface::OnInteract_Implementation();
-// 	//To Be implemented
-// }
-//
-// void ABaseItem::Inspect_Implementation(ACharacter* Character, UStaticMesh* InspectedItemMesh, FText ItemName,
-// 	FText ItemDescription)
-// {
-// 	IInteractionInterface::Inspect_Implementation(Character, InspectedItemMesh, ItemName, ItemDescription);
-// 	//To Be implemented
-// }
-//
-// void ABaseItem::ReadNote_Implementation(ACharacter* Character, FText NoteText)
-// {
-// 	IInteractionInterface::ReadNote_Implementation(Character, NoteText);
-// 	//To be implemented
-// }
+void ABaseItem::OnInteract_Implementation()
+{
+	IInteractionInterface::OnInteract_Implementation();
+	//To Be implemented
+}
 

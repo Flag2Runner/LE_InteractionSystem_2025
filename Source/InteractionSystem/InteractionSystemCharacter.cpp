@@ -73,7 +73,7 @@ void AInteractionSystemCharacter::SetupPlayerInputComponent(UInputComponent* Pla
 		EnhancedInputComponent->BindAction(LookAction, ETriggerEvent::Triggered, this, &AInteractionSystemCharacter::Look);
 		
 		//Interaction
-		//EnhancedInputComponent->BindAction(InteractAction, ETriggerEvent::Triggered, this, &AInteractionSystemCharacter::Interact);
+		EnhancedInputComponent->BindAction(InteractAction, ETriggerEvent::Triggered, this, &AInteractionSystemCharacter::Interact);
 
 	}
 	else

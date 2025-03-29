@@ -22,12 +22,12 @@ class IInteractionInterface
 
 	// Add interface functions to this class. This is the class that will be inherited to implement this interface.
 public:
-	// UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Interaction")
-	// void OnInteract();
-	//
-	// UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Interaction")
-	// void Inspect(ACharacter* Character, UStaticMesh* InspectedItemMesh, FText ItemName, FText ItemDescription);
-	//
-	// UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Interaction")
-	// void ReadNote(ACharacter* Character, FText NoteText); 
+	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Interaction")
+	void OnInteract();
+	
+	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Interaction")
+	void Inspect(ACharacter* Character, UStaticMesh* InspectedItemMesh, const FText& ItemName, const FText& ItemDescription);
+	
+	UFUNCTION(BlueprintCallable, BlueprintNativeEvent,Category = "Interaction")
+	void ReadNote(ACharacter* Character,  const FText& NoteText); 
 };

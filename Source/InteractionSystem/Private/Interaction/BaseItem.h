@@ -24,10 +24,7 @@ public:
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
-	// virtual void OnInteract_Implementation() override;
-	//
-	// virtual void Inspect_Implementation(ACharacter* Character, UStaticMesh* InspectedItemMesh, FText ItemName, FText ItemDescription) override;
-	// virtual void ReadNote_Implementation(ACharacter* Character, FText NoteText) override;
+	virtual void OnInteract_Implementation() override;
 
 
 
