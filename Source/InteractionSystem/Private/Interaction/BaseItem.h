@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "Components/CanvasPanel.h"
 #include "Components/SphereComponent.h"
 #include "Interaction/InteractionInterface.h"
 #include "GameFramework/Actor.h"
@@ -18,6 +19,7 @@ class ABaseItem : public AActor, public IInteractionInterface
 public:
 	// Sets default values for this actor's properties
 	ABaseItem();
+	virtual void OnConstruction(const FTransform& Transform) override;
 
 protected:
 	// Called when the game starts or when spawned
@@ -32,16 +34,17 @@ public:
 private:
 	UFUNCTION()
 	void AutoReadNote();
+
+	void ConfigureDebug(bool bIsVisible);
 	//*************************//
-	//      UI prefabs         //
+	//            UI           //
 	//*************************//
 
-	UPROPERTY(EditDefaultsOnly, Category = "Public | Reference | Prefab")
+	UPROPERTY(EditDefaultsOnly, Category = "Public | UI | Prefab")
 	TSubclassOf<UW_Note> NoteWidgetClass;
 
-	UPROPERTY(EditDefaultsOnly, Category = "Public | Reference | Prefab")
+	UPROPERTY(EditDefaultsOnly, Category = "Public | UI | Prefab")
 	TSubclassOf<UW_Inspect> InspectWidgetClass;
-
 
 	//*************************//
 	//      Interaction        //
@@ -77,30 +80,38 @@ public:
 public:
 	UPROPERTY(BlueprintReadOnly, Category= "public | Reference")
 	ACharacter* PlayerCharacterReference;
+	
+	UPROPERTY(BlueprintReadOnly, Category= "public | Reference")
+	APlayerController* PlayerController;
 
 	UPROPERTY(BlueprintReadOnly, Category= "public | Reference")
 	class UW_Note* NoteWidgetReference;
-	
-	UPROPERTY(EditDefaultsOnly, Category = "Public | Reference | Prefab")
-	UTexture* InteractIcon;
 
-	UPROPERTY(EditDefaultsOnly, Category = "Public | Reference | Prefab")
-	UTexture* NotifyIcon;
-private:
-	UPROPERTY()
+	UPROPERTY(VisibleAnywhere, Category = "public | Reference")
+	UCanvasPanel* NoteCanvasPanel;
+	
+	UPROPERTY(EditDefaultsOnly, Category = "public | Reference | Prefab")
+	UTexture2D* InteractIcon;
+
+	UPROPERTY(EditDefaultsOnly, Category = "public | Reference | Prefab")
+	UTexture2D* NotifyIcon;
+public:
+	UPROPERTY(EditDefaultsOnly, Category = "public | Reference | Collision")
 	USphereComponent* NotifySphereComponent;
 
-	UPROPERTY()
+	UPROPERTY(EditDefaultsOnly, Category = "public | Reference | Collision")
 	USphereComponent* InteractionSphereComponent;
 
-	UPROPERTY()
+	UPROPERTY(EditDefaultsOnly, Category = "public | Reference | Bilboard")
 	UBillboardComponent* NotifyBillboardComponent;
 
-	UPROPERTY()
+	UPROPERTY(EditDefaultsOnly, Category = "public | Reference | Bilboard")
 	UBillboardComponent* InteractionBillboardComponent;
 
-	UPROPERTY()
+	UPROPERTY(EditDefaultsOnly, Category = "public | Reference | Mesh")
 	UStaticMeshComponent* ItemMeshComponent;
+
+	
 
 	
 	//*************************//
@@ -117,7 +128,7 @@ public:
 	FText ItemDescription;
 
 	UPROPERTY(EditInstanceOnly, BlueprintReadOnly, Category = "Public | Mesh")
-	FVector ItemScale;
+	FVector ItemScale = FVector(1,1,1);
 
 	//*************************//
 	//         Note            //
@@ -126,7 +137,7 @@ public:
 	UPROPERTY(EditInstanceOnly, BlueprintReadOnly, Category = "Public | Note")
 	bool bIsAutoRead;
 	
-	UPROPERTY(EditInstanceOnly, BlueprintReadOnly, Category = "Public | Note")
+	UPROPERTY(EditInstanceOnly, BlueprintReadOnly, Category = "Public | Note", meta = (MultiLine = "true"))
 	FText NoteText;
 
 	UPROPERTY()

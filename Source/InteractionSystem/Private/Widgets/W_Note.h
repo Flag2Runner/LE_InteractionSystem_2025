@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "Blueprint/UserWidget.h"
+#include "Components/CanvasPanel.h"
 #include "W_Note.generated.h"
 
 /**
@@ -17,5 +18,13 @@ class UW_Note : public UUserWidget
 public:
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, meta = (ExposeOnSpawn = "true"))
 	FText NoteText;
+
+	//This has to be the same name as the canvas in the editor.
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, meta = (ExposeOnSpawn = "true"))
+	FName NoteCanvasPanelName;
+	
+	
+	
+	
 	
 };

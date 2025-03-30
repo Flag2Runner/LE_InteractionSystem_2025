@@ -73,7 +73,7 @@ void AInteractionSystemCharacter::SetupPlayerInputComponent(UInputComponent* Pla
 		EnhancedInputComponent->BindAction(LookAction, ETriggerEvent::Triggered, this, &AInteractionSystemCharacter::Look);
 		
 		//Interaction
-		EnhancedInputComponent->BindAction(InteractAction, ETriggerEvent::Triggered, this, &AInteractionSystemCharacter::Interact);
+		EnhancedInputComponent->BindAction(InteractAction, ETriggerEvent::Started, this, &AInteractionSystemCharacter::Interact);
 
 	}
 	else
@@ -119,33 +119,19 @@ void AInteractionSystemCharacter::Interact(const FInputActionValue& Value)
 {
 	// Start location (camera position)
 	FVector StartLocation;
-	FVector ForwardVector;
-	
-	// Check if the player has a camera component
-	//if (UCameraComponent* CameraComponent = FindComponentByClass<UCameraComponent>())
-	//{
-	//	StartLocation = CameraComponent->GetComponentLocation();
-	//	ForwardVector = CameraComponent->GetForwardVector();
-	//}
-	//else
-	//{
-	//	// Fallback to player's viewpoint if no camera component is found
-	//	FRotator PlayerViewRotation;
-	//	GetController()->GetPlayerViewPoint(StartLocation, PlayerViewRotation);
-	//	
-	//	ForwardVector = PlayerViewRotation.Vector();
-	//}
 
 	FRotator PlayerViewRotation;
 	GetController()->GetPlayerViewPoint(StartLocation, PlayerViewRotation);
-	ForwardVector = PlayerViewRotation.Vector();
+	FVector ForwardVector = PlayerViewRotation.Vector();
 
 	// End location for the trace
 	FVector EndLocation = StartLocation + ForwardVector * 250.0f; // 250 units range
 	
 	// Define trace parameters
 	FHitResult HitResult;
-	FCollisionQueryParams TraceParams(FName(TEXT("InteractionTrace")), true, this);
+	FCollisionQueryParams TraceParams;
+	TraceParams.AddIgnoredActor(this);
+	TraceParams.bTraceComplex = true;
 
 	bool bHit = GetWorld()->LineTraceSingleByChannel(
 		HitResult,                       // Result data
@@ -156,17 +142,24 @@ void AInteractionSystemCharacter::Interact(const FInputActionValue& Value)
 		);
 
 
-	if (!bHit)
+	if (bHit == false)
 		return;
 	
 	// Visual Debug Line (optional)
 	FColor LineColor = bHit ? FColor::Green : FColor::Red;
-	DrawDebugLine(GetWorld(), StartLocation, EndLocation, LineColor, false, 2.0f, 0, 1.0f);
+	DrawDebugLine(GetWorld(), StartLocation, bHit ? HitResult.Location: EndLocation,
+		bHit ? FColor::Green : FColor::Red, false, .1f, 0, 1.0f);
 
+	UE_LOG(LogTemp, Warning, TEXT("Player Pressed E") )
 	AActor* HitActor = HitResult.GetActor();
 	if(HitActor && HitActor->Implements<UInteractionInterface>())
 	{
-		
+		if(HitActor->GetClass()->ImplementsInterface(UInteractionInterface::StaticClass()))
+		{
+			IInteractionInterface::Execute_OnInteract(HitActor);
+		UE_LOG(LogTemp, Warning, TEXT("Interact Executed") )
+			
+		}
 	}
 	
 
