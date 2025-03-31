@@ -3,9 +3,12 @@
 
 #include "Interaction/BaseInspectItem.h"
 
+#include "EnhancedInputSubsystems.h"
+#include "InputActionValue.h"
+#include "EnhancedInputComponent.h"
 #include "Blueprint/WidgetTree.h"
+#include "Components/PointLightComponent.h"
 #include "Components/SceneCaptureComponent2D.h"
-#include "Engine/SceneCapture2D.h"
 #include "GameFramework/PlayerController.h"
 #include "Engine/World.h"
 #include "GameFramework/Character.h"
@@ -16,10 +19,23 @@
 ABaseInspectItem::ABaseInspectItem()
 {
  	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
-	//PrimaryActorTick.bCanEverTick = true;
+	PrimaryActorTick.bCanEverTick = true;
 
 	USceneComponent* SceneComponent = CreateDefaultSubobject<USceneComponent>(FName("SceneRootComponent"));
 	RootComponent = SceneComponent;
+
+	UStaticMeshComponent* TempPhotoBothMeshReference = CreateDefaultSubobject<UStaticMeshComponent>(FName("PhotoBooth"));
+	TempPhotoBothMeshReference->SetupAttachment(RootComponent);
+	TempPhotoBothMeshReference->SetWorldScale3D(FVector(13.5f));
+
+	UPointLightComponent* PointLightComponent = CreateDefaultSubobject<UPointLightComponent>(FName("PointLight"));
+	PointLightComponent->SetupAttachment(RootComponent);
+	PointLightComponent->Intensity = 2500.f;
+	PointLightComponent->LightingChannels.bChannel0 = false;
+	PointLightComponent->LightingChannels.bChannel1 = true;
+	PointLightComponent->LightingChannels.bChannel2 = false;
+
+	SceneCaptureComponent = CreateDefaultSubobject<USceneCaptureComponent2D>(FName("SceneCaptureComponent2D"));
 	
 	ItemPivotMeshComponent = CreateDefaultSubobject<UStaticMeshComponent>(FName("ItemPivot"));
 	ItemPivotMeshComponent->SetupAttachment(RootComponent);
@@ -38,11 +54,49 @@ void ABaseInspectItem::BeginPlay()
 {
 	Super::BeginPlay();
 	PlayerController = UGameplayStatics::GetPlayerController(GetWorld(), 0);
-	AActor* FoundActor = UGameplayStatics::GetActorOfClass(this, USceneCaptureComponent2D::StaticClass());
 	
-	SceneCaptureComponent = Cast<USceneCaptureComponent2D>(FoundActor);
+	SceneCaptureComponent->ShowOnlyActorComponents(this);
+	SceneCaptureComponent->CaptureSource = SCS_FinalColorHDR;
+	SceneCaptureComponent->bCaptureEveryFrame = true;
+	SceneCaptureComponent->bCaptureOnMovement = true;
+
 	
-	
+}
+
+void ABaseInspectItem::OnMove(const FInputActionValue& Value)
+{
+	FVector2D MoveVector = Value.Get<FVector2D>(); // Get movement input
+	UE_LOG(LogTemp, Warning, TEXT("Move X: %f, Move Y: %f"), MoveVector.X, MoveVector.Y);
+
+	if(!bIsInNote && (MoveVector.X != 0 || MoveVector.Y != 0))
+	{
+		FRotator NewRotation = ItemPivotMeshComponent->GetComponentRotation();
+
+		NewRotation.Yaw += MoveVector.X * -2.f;
+		NewRotation.Pitch += MoveVector.Y * -2.f;
+		ItemPivotMeshComponent->SetWorldRotation(NewRotation);
+	}
+}
+
+void ABaseInspectItem::Interact(const FInputActionValue& Value)
+{
+	if (InspectWidgetReference->IsValidLowLevel() || NoteWidgetReference->IsValidLowLevel())
+	{
+		if(InspectWidgetReference)
+		{
+			InspectWidgetReference->RemoveFromParent();
+			InspectWidgetReference = nullptr;
+		}
+		if(NoteWidgetReference)
+		{
+			NoteWidgetReference->RemoveFromParent();
+			NoteWidgetReference = nullptr;
+		}
+				
+		RootComponent->SetVisibility(false);
+		PlayerCharacterReference->EnableInput(PlayerController);
+		DisableInput(PlayerController);
+	}
 }
 
 // Called every frame
@@ -51,33 +105,24 @@ void ABaseInspectItem::Tick(float DeltaTime)
 	Super::Tick(DeltaTime);
 	if (PlayerController)
 	{
-		if (PlayerController->WasInputKeyJustPressed(FKey(EKeys::E)))
+		if (PlayerController->WasInputKeyJustPressed(EKeys::E))
 		{
 			
-		}
-		if (PlayerController->WasInputKeyJustPressed(FKey(EKeys::W)))
-		{
-			
-		}
-		if (PlayerController->WasInputKeyJustPressed(FKey(EKeys::A)))
-		{
-			
-		}
-		if (PlayerController->WasInputKeyJustPressed(FKey(EKeys::S)))
-		{
-			
-		}
-		if (PlayerController->WasInputKeyJustPressed(FKey(EKeys::D)))
-		{
 			
 		}
 		//Press to toggle between read note and inspect
-		if (PlayerController->WasInputKeyJustPressed(FKey(EKeys::SpaceBar)))
+		if (PlayerController->WasInputKeyJustPressed(EKeys::SpaceBar) && NoteWidgetReference->IsValidLowLevel())
 		{
-			if()
+			UCanvasPanel* NoteCanvasPanel = Cast<UCanvasPanel>(NoteWidgetReference->WidgetTree->FindWidget(NoteWidgetReference->NoteCanvasPanelName));
 			if(!bIsInNote)
 			{
-				NoteWidgetReference->
+				NoteCanvasPanel->SetRenderOpacity(1);
+				bIsInNote = true;
+			}
+			else
+			{
+				NoteCanvasPanel->SetRenderOpacity(0);
+				bIsInNote = false;
 			}
 		}
 		//Set mouse movement
@@ -87,30 +132,30 @@ void ABaseInspectItem::Tick(float DeltaTime)
 			ItemPivotMeshComponent->SetWorldRotation(CombinedRotators);
 		}
 		//Zoom In
-		if (PlayerController->WasInputKeyJustPressed(FKey(EKeys::MouseScrollDown)) && !bIsInNote)
+		if (PlayerController->WasInputKeyJustPressed(EKeys::MouseScrollDown) && !bIsInNote)
 		{
 			float NewFOV = SceneCaptureComponent->FOVAngle - 1;
 			UKismetMathLibrary::FClamp(NewFOV, 30,80);
 			
 		}
 		//Zoom out
-		if (PlayerController->WasInputKeyJustPressed(FKey(EKeys::MouseScrollUp)) && !bIsInNote)
+		if (PlayerController->WasInputKeyJustPressed(EKeys::MouseScrollUp) && !bIsInNote)
 		{
 			float NewFOV = SceneCaptureComponent->FOVAngle + 1;
 			UKismetMathLibrary::FClamp(NewFOV, 30,80);
 		}
 		//ResetTransform of Inspected Item;
-		if (PlayerController->WasInputKeyJustPressed(FKey(EKeys::RightMouseButton)) && !bIsInNote)
+		if (PlayerController->WasInputKeyJustPressed(EKeys::RightMouseButton) && !bIsInNote)
 		{
 			ItemPivotMeshComponent->SetWorldRotation(InitialRotation);
 			SceneCaptureComponent->FOVAngle = 50;
 		}
 		//Only Allows the rotation when clicking the left mouse button.
-		if (PlayerController->WasInputKeyJustPressed(FKey(EKeys::LeftMouseButton)))
+		if (PlayerController->WasInputKeyJustPressed(EKeys::LeftMouseButton))
 		{
 			bIsRotating = true;
 		}
-		if (PlayerController->WasInputKeyJustReleased(FKey(EKeys::MouseScrollUp)))
+		if (PlayerController->WasInputKeyJustReleased(EKeys::MouseScrollUp))
 		{
 			bIsRotating = false;
 		}
@@ -124,9 +169,7 @@ void ABaseInspectItem::ReadNote_Implementation(ACharacter* Character, const FTex
 
 	PlayerCharacterReference = Character;
 
-	UW_Note* NoteWidgetInstance = CreateWidget<UW_Note>(GetWorld(), NoteWidgetClass, FName("NoteWidget"));
-		
-	if(NoteWidgetInstance->IsValidLowLevel())
+	if(UW_Note* NoteWidgetInstance = CreateWidget<UW_Note>(GetWorld(), NoteWidgetClass, FName("NoteWidget")))
 	{
 		NoteWidgetReference =NoteWidgetInstance;
 		NoteWidgetReference->NoteText = NoteText;
@@ -138,7 +181,7 @@ void ABaseInspectItem::ReadNote_Implementation(ACharacter* Character, const FTex
 			NoteReadBorder->SetRenderOpacity(1);
 		
 		PlayerCharacterReference->DisableInput(PlayerController);
-		PlayerCharacterReference->EnableInput(PlayerController);
+		EnableInput(PlayerController);
 	}
 	
 }
@@ -151,9 +194,8 @@ void ABaseInspectItem::Inspect_Implementation(ACharacter* Character, UStaticMesh
 	PlayerCharacterReference = Character;
 
 	ItemMeshComponent->SetStaticMesh(InspectedItemMesh);
-
 	UW_Inspect* InspectWidgetInstance = CreateWidget<UW_Inspect>(GetWorld(), InspectWidgetClass, FName("InspectWidget"));
-	if(InspectWidgetInstance->IsValidLowLevel())
+	if(InspectWidgetInstance)
 	{
 		InspectWidgetReference = InspectWidgetInstance;
 		InspectWidgetReference->ItemName = ItemName;
@@ -161,8 +203,53 @@ void ABaseInspectItem::Inspect_Implementation(ACharacter* Character, UStaticMesh
 		InspectWidgetReference->AddToViewport();
 
 		PlayerCharacterReference->DisableInput(PlayerController);
-		PlayerCharacterReference->EnableInput(PlayerController);
+		EnableInput(PlayerController);
 		bIsInNote = false;
 	}
+}
+
+void ABaseInspectItem::SetInspectRotationScaleOffset(const FRotator& ItemRotation, float NewInspectionOffset,
+                                                     const FVector& InspectionScale)
+{
+	InitialRotation = ItemRotation;
+	FVector NewMeshLocation = ItemMeshComponent->GetComponentLocation();
+	NewMeshLocation.Z = NewInspectionOffset;
+	InspectionOffset = NewMeshLocation;
+	ItemMeshComponent->SetWorldLocation(InspectionOffset);
+	ItemMeshComponent->SetWorldScale3D(InspectionScale);
+	ItemPivotMeshComponent->SetWorldRotation(InitialRotation);
+}
+
+void ABaseInspectItem::InitVariables(TSubclassOf<UW_Note> NewNoteWidgetClass,
+	TSubclassOf<UW_Inspect> NewInspectWidgetClass, const UInputMappingContext* NewInputMappingContext,
+	const UInputAction* NewMoveAction, const UInputAction* NewInteractAction, UTextureRenderTarget2D* NewRenderTarget2D)
+{
+	NoteWidgetClass = NewNoteWidgetClass;
+	InspectWidgetClass = NewInspectWidgetClass;
+	InputMappingContext = NewInputMappingContext;
+	MoveAction = NewMoveAction;
+	InteractAction = NewInteractAction;
+	RenderTarget2D =NewRenderTarget2D;
+
+	SceneCaptureComponent->TextureTarget = RenderTarget2D;
+	if (PlayerController)
+	{
+		UEnhancedInputLocalPlayerSubsystem* InputSubsystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(PlayerController->GetLocalPlayer());
+		if (InputSubsystem && InputMappingContext)
+		{
+			InputSubsystem->AddMappingContext(InputMappingContext, 0);
+		}
+
+		UEnhancedInputComponent* EnhancedInputComponent = Cast<UEnhancedInputComponent>(PlayerController->InputComponent);
+		if (EnhancedInputComponent && MoveAction)
+		{
+			EnhancedInputComponent->BindAction(MoveAction, ETriggerEvent::Triggered, this, &ABaseInspectItem::OnMove);
+
+			//Interaction
+			EnhancedInputComponent->BindAction(InteractAction, ETriggerEvent::Started, this, &ABaseInspectItem::Interact);
+		}
+	}
+	
+	
 }
 

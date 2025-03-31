@@ -8,8 +8,8 @@
 #include "Interaction/InteractionInterface.h"
 #include "Components/StaticMeshComponent.h"
 #include "GameFramework/Character.h"
+#include  "Interaction/BaseInspectItem.h"
 #include "GameFramework/CharacterMovementComponent.h"
-#include "GameFramework/GameSession.h"
 #include "Kismet/GameplayStatics.h"
 #include "Widgets/W_Note.h"
 
@@ -23,6 +23,9 @@ ABaseItem::ABaseItem()
 	
 	ItemMeshComponent = CreateDefaultSubobject<UStaticMeshComponent>(FName("ItemMesh"));
 	ItemMeshComponent->SetupAttachment(RootComponent);
+
+	InspectItemReference = CreateDefaultSubobject<ABaseInspectItem>(FName("InspectItem"));
+	InspectItemReference->SetActorHiddenInGame(false);
 
 	InteractionSphereComponent = CreateDefaultSubobject<USphereComponent>(TEXT("InteractionSphereComponent"));
 	InteractionSphereComponent->SetupAttachment(RootComponent);
@@ -95,8 +98,6 @@ void ABaseItem::BeginPlay()
 
 	InteractionBillboardComponent->SetRelativeLocation(IconLocation);
 	NotifyBillboardComponent->SetRelativeLocation(IconLocation);
-
-	
 	
 	ConfigureDebug(false);
 	
@@ -114,12 +115,28 @@ void ABaseItem::OnInteract_Implementation()
 	IInteractionInterface::OnInteract_Implementation();
 	if(!bIsAutoRead && bIsInspect)
 	{
-		UE_LOG(LogTemp, Warning, TEXT("Created Inspect Item Actor"));
+		FActorSpawnParameters SpawnParameters = FActorSpawnParameters();
+		SpawnParameters.Name = FName("InspectItem");
+		
+		if (!InspectItemReference->IsValidLowLevel())
+		{
+			UE_LOG(LogTemp, Error, TEXT("SpawnActor failed! Check if InspectItemClass is valid and the world exists."));
+			return;
+		}
+		
+		InspectItemReference->InitVariables(NoteWidgetClass, InspectWidgetClass, InputMappingContext, MoveAction, InteractAction, RenderTarget2D);
+		
+		InspectItemReference->SetActorLocation(FVector(1000,0,0));
+		
+		InspectItemReference->SetInspectRotationScaleOffset(DefaultInspectionRotation, DefaultInspectionOffset, DefaultInspectionScale);
+		InspectItemReference->SetActorHiddenInGame(true);
 
 		
 
-		//Execute_Inspect();
-		Execute_ReadNote(NoteWidgetReference, PlayerCharacterReference, NoteText);
+		UE_LOG(LogTemp, Warning, TEXT("Created Inspect Item Actor"));
+		Execute_Inspect(InspectItemReference, PlayerCharacterReference, ItemMeshComponent->GetStaticMesh(), ItemName, ItemDescription);
+		Execute_ReadNote(InspectItemReference, PlayerCharacterReference, NoteText);
+		
 	}
 
 	if (bIsAutoRead)
@@ -183,20 +200,42 @@ void ABaseItem::ConfigureDebug(bool bIsVisible)
 void ABaseItem::OnInteractOverlapBegin(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
                                        UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
+	if(OtherActor == PlayerCharacterReference)
+	{
+		InteractionBillboardComponent->SetVisibility(true);
+		NotifyBillboardComponent->SetVisibility(false);
+		
+	}
 }
 
 void ABaseItem::OnInteractOverlapEnd(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
 	UPrimitiveComponent* OtherComp, int32 OtherBodyIndex)
 {
+	if(OtherActor == PlayerCharacterReference)
+	{
+		InteractionBillboardComponent->SetVisibility(false);
+		NotifyBillboardComponent->SetVisibility(true);
+		
+	}
 }
 
 void ABaseItem::OnNotifyOverlapBegin(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
 	UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
+	if(OtherActor == PlayerCharacterReference)
+	{
+		NotifyBillboardComponent->SetVisibility(true);
+		
+	}
 }
 
 void ABaseItem::OnNotifyOverlapEnd(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
 	UPrimitiveComponent* OtherComp, int32 OtherBodyIndex)
 {
+	if(OtherActor == PlayerCharacterReference)
+	{
+		NotifyBillboardComponent->SetVisibility(false);
+		
+	}
 }
 

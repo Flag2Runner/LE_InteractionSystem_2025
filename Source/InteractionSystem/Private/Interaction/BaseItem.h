@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "BaseInspectItem.h"
 #include "Components/CanvasPanel.h"
 #include "Components/SphereComponent.h"
 #include "Interaction/InteractionInterface.h"
@@ -41,6 +42,24 @@ private:
 
 	UPROPERTY(EditDefaultsOnly, Category = "Public | UI | Prefab")
 	TSubclassOf<UW_Note> NoteWidgetClass;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Public | UI | Prefab")
+	TSubclassOf<UW_Inspect> InspectWidgetClass;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Public | Mesh | Prefab")
+	TSubclassOf<ABaseInspectItem> InspectItemClass;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Public | UI | Prefab")
+	const UInputMappingContext* InputMappingContext;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Public | UI | Prefab")
+	const UInputAction* MoveAction;
+	
+	UPROPERTY(EditDefaultsOnly, Category = "Public | UI | Prefab")
+	const UInputAction* InteractAction;
+	
+	UPROPERTY(EditDefaultsOnly, Category = "Public | UI | Teture")
+	UTextureRenderTarget2D* RenderTarget2D;
 
 	//*************************//
 	//      Interaction        //
@@ -82,6 +101,9 @@ public:
 
 	UPROPERTY(BlueprintReadOnly, Category= "public | Reference")
 	class UW_Note* NoteWidgetReference;
+
+	UPROPERTY(BlueprintReadOnly, Category = "public | Reference")
+	ABaseInspectItem* InspectItemReference;
 
 	UPROPERTY(VisibleAnywhere, Category = "public | Reference")
 	UCanvasPanel* NoteCanvasPanel;

@@ -148,7 +148,7 @@ void AInteractionSystemCharacter::Interact(const FInputActionValue& Value)
 	// Visual Debug Line (optional)
 	FColor LineColor = bHit ? FColor::Green : FColor::Red;
 	DrawDebugLine(GetWorld(), StartLocation, bHit ? HitResult.Location: EndLocation,
-		bHit ? FColor::Green : FColor::Red, false, .1f, 0, 1.0f);
+		bHit ? FColor::Green : FColor::Red, false, .5f, 0, 1.0f);
 
 	UE_LOG(LogTemp, Warning, TEXT("Player Pressed E") )
 	AActor* HitActor = HitResult.GetActor();
