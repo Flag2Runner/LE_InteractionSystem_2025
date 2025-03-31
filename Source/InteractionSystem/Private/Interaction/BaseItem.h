@@ -7,7 +7,6 @@
 #include "Components/SphereComponent.h"
 #include "Interaction/InteractionInterface.h"
 #include "GameFramework/Actor.h"
-#include "Widgets/W_Inspect.h"
 #include "Widgets/W_Note.h"
 #include "BaseItem.generated.h"
 
@@ -42,9 +41,6 @@ private:
 
 	UPROPERTY(EditDefaultsOnly, Category = "Public | UI | Prefab")
 	TSubclassOf<UW_Note> NoteWidgetClass;
-
-	UPROPERTY(EditDefaultsOnly, Category = "Public | UI | Prefab")
-	TSubclassOf<UW_Inspect> InspectWidgetClass;
 
 	//*************************//
 	//      Interaction        //

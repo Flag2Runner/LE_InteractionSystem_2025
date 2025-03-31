@@ -116,7 +116,7 @@ void ABaseItem::OnInteract_Implementation()
 	{
 		UE_LOG(LogTemp, Warning, TEXT("Created Inspect Item Actor"));
 
-		//Still need to create the Inspect Actor Script.
+		
 
 		//Execute_Inspect();
 		Execute_ReadNote(NoteWidgetReference, PlayerCharacterReference, NoteText);

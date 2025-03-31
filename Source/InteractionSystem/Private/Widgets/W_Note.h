@@ -22,6 +22,9 @@ public:
 	//This has to be the same name as the canvas in the editor.
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, meta = (ExposeOnSpawn = "true"))
 	FName NoteCanvasPanelName;
+
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, meta = (ExposeOnSpawn = "true"))
+	FName NoteReadBorderName;
 	
 	
 	
